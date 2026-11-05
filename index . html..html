@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ODICH - Matemáticas Interculturales del Chocó</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; background-color: #f0fdf4; color: #064e3b; }
+        .hero-gradient { background: linear-gradient(135deg, #064e3b 0%, #047857 50%, #15803d 100%); }
+        .card-modern { background: #ffffff; border-radius: 16px; box-shadow: 0 4px 20px -2px rgba(6, 78, 59, 0.08); padding: 1.75rem; margin-bottom: 1.5rem; border: 1px solid #e2e8f0; }
+        @media print { .no-print { display: none !important; } }
+    </style>
+</head>
+<body class="p-3 md:p-8 max-w-6xl mx-auto">
+
+    <!-- ENCABEZADO INSTITUCIONAL CON PESTAÑAS DE NAVEGACIÓN -->
+    <header class="card-modern no-print hero-gradient text-white shadow-xl mb-6">
+        <div class="flex flex-col lg:flex-row justify-between items-center gap-4">
+            <div>
+                <span class="px-3 py-1 bg-amber-400/20 text-amber-300 border border-amber-400/30 rounded-full text-xs font-bold uppercase">🌿 ODICH - Plataforma Intercultural</span>
+                <h1 class="text-2xl lg:text-3xl font-extrabold text-amber-300 mt-1">Matemáticas Interculturales del Chocó</h1>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <button onclick="switchTab('estudiante')" id="btn-tab-est" class="px-4 py-2.5 bg-amber-400 text-emerald-950 font-bold rounded-xl shadow">🎓 Aula Estudiante</button>
+                <button onclick="solicitarAccesoDocente()" id="btn-tab-doc" class="px-4 py-2.5 bg-emerald-800 text-white border border-emerald-600 font-bold rounded-xl hover:bg-emerald-700">🔑 Módulo Docente (Resultados)</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- BARRA DE ESTADO DE RED LOCAL WI-FI -->
+    <div id="barra-estado-red" class="mb-4 p-3 bg-emerald-100/80 border border-emerald-300 text-emerald-900 rounded-xl text-xs font-semibold flex flex-col sm:flex-row justify-between items-center gap-2 no-print">
+        <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span>
+            <span>Servidor Wi-Fi Local: <strong id="lbl-ip-servidor">Modo Local (Mismo Dispositivo / Servidor)</strong></span>
+        </div>
+        <div class="flex gap-2">
+            <button onclick="abrirConfigRed()" class="px-3 py-1 bg-emerald-800 text-white rounded-lg text-xs font-bold hover:bg-emerald-900">⚙️ Configurar IP Wi-Fi</button>
+            <button onclick="sincronizarPendientes()" id="btn-sync-pendientes" class="px-3 py-1 bg-amber-400 text-emerald-950 rounded-lg text-xs font-bold hidden hover:bg-amber-300">⚡ Sincronizar Pendientes</button>
+        </div>
+    </div>
+
+    <!-- SECCIÓN AULA ESTUDIANTE -->
+    <main id="sec-estudiante" class="space-y-6">
+        <div class="card-modern bg-emerald-50/70 border-emerald-200">
+            <h2 class="text-lg font-bold text-emerald-950 mb-3">Selecciona tu Ruta de Estudio</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-emerald-900 uppercase mb-1">Grado:</label>
+                    <select id="sel-grado" onchange="actualizarLecciones()" class="w-full p-3 border border-emerald-300 rounded-xl bg-white text-emerald-950 font-semibold focus:ring-2 focus:ring-emerald-600">
+                        <option value="1">1.º Grado (Conteo y Semillas)</option>
+                        <option value="2">2.º Grado (Sumas y Restas)</option>
+                        <option value="3">3.º Grado (Multiplicación)</option>
+                        <option value="4">4.º Grado (Divisiones)</option>
+                        <option value="5" selected>5.º Grado (Fracciones y Pesca)</option>
+                        <option value="6">6.º Grado (Geometría)</option>
+                        <option value="7">7.º Grado (Enteros y Río)</option>
+                        <option value="8">8.º Grado (Álgebra)</option>
+                        <option value="9">9.º Grado (Sistemas y Trueque)</option>
+                        <option value="10">10.º Grado (Trigonometría)</option>
+                        <option value="11">11.º Grado (Cálculo)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-emerald-900 uppercase mb-1">Período:</label>
+                    <select id="sel-periodo" onchange="actualizarLecciones()" class="w-full p-3 border border-emerald-300 rounded-xl bg-white text-emerald-950 font-semibold focus:ring-2 focus:ring-emerald-600">
+                        <option value="1">Período 1</option>
+                        <option value="2">Período 2</option>
+                        <option value="3">Período 3</option>
+                        <option value="4">Período 4</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-emerald-900 uppercase mb-1">Lección:</label>
+                    <select id="sel-leccion" onchange="cargarLeccion()" class="w-full p-3 border border-emerald-300 rounded-xl bg-white text-emerald-950 font-semibold focus:ring-2 focus:ring-emerald-600">
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div id="contenido-leccion" class="card-modern">
+            <!-- Dinámico -->
+        </div>
+    </main>
+
+    <!-- SECCIÓN MÓDULO DOCENTE (REGISTRO DE RESULTADOS) -->
+    <section id="sec-docente" class="hidden space-y-6">
+        <div class="card-modern bg-amber-50/70 border-amber-300">
+            <div class="flex flex-col md:flex-row justify-between items-center border-b border-amber-200 pb-3 mb-4 gap-2">
+                <div>
+                    <h2 class="text-xl font-bold text-amber-950">🔑 Módulo Docente - Evaluaciones Recibidas</h2>
+                    <p class="text-xs text-amber-900 mt-0.5">Aquí puedes ver los resultados enviados por los estudiantes desde sus dispositivos.</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="cerrarSesionDocente()" class="px-3 py-1.5 bg-slate-200 text-slate-800 border border-slate-300 rounded-xl text-xs font-bold hover:bg-slate-300">🔒 Cerrar Sesión</button>
+                    <button onclick="limpiarHistorialDocente()" class="px-3 py-1.5 bg-red-100 text-red-800 border border-red-300 rounded-xl text-xs font-bold hover:bg-red-200">🗑️ Limpiar Historial</button>
+                </div>
+            </div>
+            <div id="registro-pruebas-docente" class="space-y-3">
+                <!-- Listado dinámico de notas -->
+            </div>
+        </div>
+    </section>
+
+    
+    <!-- MODAL DE CONFIGURACIÓN DE RED WI-FI LOCAL -->
+    <div id="modal-config-red" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl shadow-2xl border border-emerald-100 p-6 max-w-md w-full">
+            <div class="text-center mb-4">
+                <span class="inline-block p-3 bg-emerald-100 rounded-full text-emerald-800 mb-2">📡</span>
+                <h3 class="text-xl font-extrabold text-emerald-950">Configurar Servidor Wi-Fi Local</h3>
+                <p class="text-xs text-emerald-700 mt-1">Ingresa la IP del equipo servidor del colegio (ej: <code>http://192.168.1.100:3000</code>) para enviar las evaluaciones por Wi-Fi.</p>
+            </div>
+            <form onsubmit="guardarConfigRed(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-emerald-900 uppercase mb-1">Dirección IP / URL del Servidor:</label>
+                    <input type="text" id="input-ip-servidor" placeholder="Ej: http://192.168.1.100:3000" class="w-full p-3 border border-emerald-300 rounded-xl bg-slate-50 text-emerald-950 font-semibold focus:ring-2 focus:ring-emerald-600 outline-none text-sm">
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="cerrarModalConfigRed()" class="w-1/2 py-2.5 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 border border-slate-300 text-sm">Cancelar</button>
+                    <button type="submit" class="w-1/2 py-2.5 bg-emerald-700 text-white font-bold rounded-xl hover:bg-emerald-800 shadow text-sm">Guardar IP</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DE AUTENTICACIÓN DOCENTE -->
+    <div id="modal-login-docente" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl shadow-2xl border border-emerald-100 p-6 max-w-md w-full">
+            <div class="text-center mb-4">
+                <span class="inline-block p-3 bg-emerald-100 rounded-full text-emerald-800 mb-2">🔑</span>
+                <h3 class="text-xl font-extrabold text-emerald-950">Acceso al Módulo Docente</h3>
+                <p class="text-xs text-emerald-700 mt-1">Ingresa la clave institucional para revisar los resultados de los estudiantes.</p>
+            </div>
+            <form onsubmit="validarClaveDocente(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-emerald-900 uppercase mb-1">Contraseña:</label>
+                    <input type="password" id="input-clave-docente" required placeholder="Ingresa la clave" class="w-full p-3 border border-emerald-300 rounded-xl bg-slate-50 text-emerald-950 font-bold text-center text-lg focus:ring-2 focus:ring-emerald-600 outline-none">
+                    <p id="msg-error-clave" class="text-xs font-bold text-red-600 mt-1.5 text-center hidden">❌ Clave incorrecta. Inténtalo de nuevo.</p>
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="cerrarModalDocente()" class="w-1/2 py-2.5 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 border border-slate-300 text-sm">Cancelar</button>
+                    <button type="submit" class="w-1/2 py-2.5 bg-emerald-700 text-white font-bold rounded-xl hover:bg-emerald-800 shadow text-sm">Ingresar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentEvaluacionData = [];
+        let esDocenteAutenticado = false;
+        const CLAVE_DOCENTE_CORRECTA = "docente123";
+        let ipServidorLocal = localStorage.getItem('odich_ip_servidor') || '';
+
+        function actualizarEstadoRedUI() {
+            const lbl = document.getElementById('lbl-ip-servidor');
+            if (ipServidorLocal) {
+                lbl.textContent = ipServidorLocal;
+            } else {
+                lbl.textContent = "Modo Local (Mismo Dispositivo / Servidor)";
+            }
+            comprobarPendientes();
+        }
+
+        function abrirConfigRed() {
+            document.getElementById('input-ip-servidor').value = ipServidorLocal;
+            document.getElementById('modal-config-red').classList.remove('hidden');
+        }
+
+        function cerrarModalConfigRed() {
+            document.getElementById('modal-config-red').classList.add('hidden');
+        }
+
+        function guardarConfigRed(e) {
+            e.preventDefault();
+            ipServidorLocal = document.getElementById('input-ip-servidor').value.trim();
+            localStorage.setItem('odich_ip_servidor', ipServidorLocal);
+            cerrarModalConfigRed();
+            actualizarEstadoRedUI();
+            alert("Configuración de IP de red Wi-Fi guardada exitosamente.");
+        }
+
+        function switchTab(tab) {
+            const btnEst = document.getElementById('btn-tab-est');
+            const btnDoc = document.getElementById('btn-tab-doc');
+            const secEst = document.getElementById('sec-estudiante');
+            const secDoc = document.getElementById('sec-docente');
+
+            if(tab === 'estudiante') {
+                secEst.classList.remove('hidden');
+                secDoc.classList.add('hidden');
+                btnEst.className = "px-4 py-2.5 bg-amber-400 text-emerald-950 font-bold rounded-xl shadow";
+                btnDoc.className = "px-4 py-2.5 bg-emerald-800 text-white border border-emerald-600 font-bold rounded-xl hover:bg-emerald-700";
+            } else {
+                secEst.classList.add('hidden');
+                secDoc.classList.remove('hidden');
+                btnDoc.className = "px-4 py-2.5 bg-amber-400 text-emerald-950 font-bold rounded-xl shadow";
+                btnEst.className = "px-4 py-2.5 bg-emerald-800 text-white border border-emerald-600 font-bold rounded-xl hover:bg-emerald-700";
+                cargarHistorialDocente();
+            }
+        }
+
+        function solicitarAccesoDocente() {
+            if(esDocenteAutenticado) {
+                switchTab('docente');
+            } else {
+                document.getElementById('input-clave-docente').value = '';
+                document.getElementById('msg-error-clave').classList.add('hidden');
+                document.getElementById('modal-login-docente').classList.remove('hidden');
+                setTimeout(() => document.getElementById('input-clave-docente').focus(), 100);
+            }
+        }
+
+        function cerrarModalDocente() {
+            document.getElementById('modal-login-docente').classList.add('hidden');
+        }
+
+        function validarClaveDocente(e) {
+            e.preventDefault();
+            const inputVal = document.getElementById('input-clave-docente').value;
+            if(inputVal === CLAVE_DOCENTE_CORRECTA) {
+                esDocenteAutenticado = true;
+                cerrarModalDocente();
+                switchTab('docente');
+            } else {
+                document.getElementById('msg-error-clave').classList.remove('hidden');
+            }
+        }
+
+        function cerrarSesionDocente() {
+            esDocenteAutenticado = false;
+            switchTab('estudiante');
+        }
+
+        const titulosTemas = {
+            1: { 1: ["Conteo de Semillas y Frutas Locales", "Agrupación hasta el 10", "Nociones Espaciales", "Comparación de Cantidades"], 2: ["La Decena y Atados", "Suma de Frutos", "Resta en Cosechas", "Operaciones Combinadas"], 3: ["Medida con el Cuerpo", "Comparación de Tamaños", "Figuras Geométricas", "Peso y Volumen"], 4: ["Tiempo y Días de la Semana", "Clima y Estaciones", "Tablas de Conteo", "Repaso General Grado 1.º"] },
+            2: { 1: ["Sumas sin Llevadas", "Restas sin Llevadas", "Números hasta el 500", "Tablas de Doble Entrada"], 2: ["Sumas con Llevadas", "Restas Pidiendo Prestado", "Introducción a la Multiplicación", "Medición con Cinta"], 3: ["Tablas del 2 al 5", "Repartos e Inicio de División", "Lectura del Reloj", "Cuerpos Geométricos 3D"], 4: ["Tablas del 6 al 10", "Operaciones con Dinero", "Pictogramas y Datos", "Repaso General Grado 2.º"] },
+            3: { 1: ["Números de 4 Cifras", "Propiedades de la Suma", "Multiplicación de una Cifra", "Lectura de Tablas"], 2: ["División Exacta", "Repartos Comunitarios", "Fracciones Simples", "Perímetro de Terrenos"], 3: ["Área de Figuras Planas", "Unidades de Peso (Kilos)", "Uso del Calendario", "Gráficos de Barras"], 4: ["Multiplicación por Dos Cifras", "División Inexacta", "Simetría en Tejidos", "Repaso General Grado 3.º"] },
+            4: { 1: ["Decimales y Moneda", "Multiplicación Avanzada", "División por Dos Cifras", "Variables Estadísticas"], 2: ["Fracciones Homogéneas", "Suma y Resta de Fracciones", "Área de Parcelas", "Capacidad en Litros"], 3: ["Clasificación de Ángulos", "Triángulos y Cuadriláteros", "Diagramas de Líneas", "Población y Muestra"], 4: ["Promedio y Media Aritmética", "Ecuaciones e Incógnitas", "Problemas de Pesca", "Repaso General Grado 4.º"] },
+            5: { 1: ["Fracciones Heterogéneas", "Multiplicación de Fracciones", "Decimales en la Pesca", "Área y Perímetro"], 2: ["Porcentajes y Descuentos", "Regla de Tres Simple", "Unidades de Volumen", "Moda y Media Estadística"], 3: ["Ecuaciones de Primer Grado", "Plano Cartesiano", "Conversión de Medidas", "Probabilidad Sencilla"], 4: ["Proporcionalidad Directa", "Escalas en Mapas", "Análisis de Cosechas", "Repaso General Grado 5.º"] },
+            6: { 1: ["Enteros y Altura del Río", "Operaciones con Enteros", "Potenciación y Radicación", "Conjuntos de Datos"], 2: ["Fracciones y Decimales", "Ecuaciones Lineales", "Polígonos Regulares", "Áreas Compuestas"], 3: ["Razones y Proporciones", "Porcentajes en Trueques", "Estadística Agrupada", "Diagramas Circulares"], 4: ["Volumen de Prismas", "Traslaciones en el Plano", "Probabilidad Frecuencial", "Repaso General Grado 6.º"] },
+            7: { 1: ["Operaciones con Racionales", "Propiedades Racionales", "Ecuaciones Racionales", "Unidades Agrarias"], 2: ["Proporcionalidad Inversa", "Reparto Proporcional", "Ángulos entre Paralelas", "Teoremas de Triángulos"], 3: ["Círculo y Circunferencia (Pi)", "Área del Círculo", "Media, Mediana y Moda", "Tablas con Intervalos"], 4: ["Transformaciones Rígidas", "Escalas y Maquetas", "Azar y Experimentos", "Repaso General Grado 7.º"] },
+            8: { 1: ["Expresiones Algebraicas", "Suma y Resta de Polinomios", "Multiplicación Algebraica", "Productos Notables"], 2: ["Factorización Base", "Trinomios y Diferencias", "Fracciones Algebraicas", "Ecuaciones Algebraicas"], 3: ["Teorema de Pitágoras", "Volúmenes Complejos", "Estadística Bivariada", "Medidas de Dispersión"], 4: ["Sistemas 2x2", "Métodos de Solución", "Probabilidad Compuesta", "Repaso General Grado 8.º"] },
+            9: { 1: ["Sistemas 3x3", "Función Lineal y Afín", "Pendiente de la Recta", "Ecuación de la Recta"], 2: ["Ecuación Cuadrática", "Análisis de la Parábola", "Cuerpos Redondos", "Teorema de Tales"], 3: ["Semejanza de Triángulos", "Razones Trigonométricas", "Nubes de Puntos", "Correlación Lineal"], 4: ["Función Exponencial", "Interés Simple y Compuesto", "Modelación de Proyectos", "Repaso General Grado 9.º"] },
+            10: { 1: ["Razones Trigonométricas", "Círculo Trigonométrico", "Funciones Seno y Coseno", "Gráficas Trigonométricas"], 2: ["Identidades Trigonométricas", "Ecuaciones Trigonométricas", "Ley del Seno", "Ley del Coseno"], 3: ["Circunferencia Analítica", "La Parábola", "Elipse e Hipérbola", "Geometría Analítica"], 4: ["Vectores en el Plano", "Estadística Inferencial", "Combinatoria y Permutaciones", "Repaso General Grado 10.º"] },
+            11: { 1: ["Inecuaciones en el Plano", "Dominio y Rango", "Límites de Funciones", "Continuidad de Funciones"], 2: ["Concepto de la Derivada", "Reglas de Derivación", "Máximos y Mínimos", "Optimización de Recursos"], 3: ["La Antiderivada e Integral", "Integral Indefinida", "Integral Definida y Áreas", "Modelos de Crecimiento"], 4: ["Estadística Tipo ICFES", "Razonamiento Cuantitativo", "Simulacro Saber 11", "Repaso General Grado 11.º"] }
+        };
+
+        function obtenerDatosLeccion(grado, periodo, leccionIdx) {
+            let numL = parseInt(leccionIdx) + 1;
+            let g = parseInt(grado);
+            let p = parseInt(periodo);
+
+            let tema = titulosTemas[g]?.[p]?.[leccionIdx] || `Tema ${numL} del Período ${p}`;
+
+            // Adaptación específica para Grado 1º (conteo directo 1-10 sin multiplicar)
+            if (g === 1) {
+                let n1 = Math.min(3 + p + numL, 7);
+                let n2 = Math.min(2 + numL, 5);
+                return {
+                    titulo: `${g}.º Grado - Período ${p} | Lección ${numL}: ${tema}`,
+                    teoria: `Hola. En esta clase sobre **${tema}** aprendemos contando despacio con nuestros dedos, piedras, semillas o peces. No hay prisa, usa tu cuaderno para hacer puntos o marcas por cada objeto.`,
+                    practica: [
+                        { p: `1. En una mesa hay ${n1} plátanos y agregas ${n2} plátanos más. ¿Cuántos plátanos hay en total?`, opts: [`A. ${n1 + n2}`, `B. ${n1 + n2 + 3}`, `C. 1`, `D. 0`], c: 0, exp: `Contamos todos juntos: ${n1} + ${n2} = ${n1 + n2}.` },
+                        { p: `2. Tienes ${n1 + 2} semillas y regalas 2 a tu hermano. ¿Cuántas semillas te quedan?`, opts: [`A. 1`, `B. ${n1}`, `C. ${n1 + 4}`, `D. 0`], c: 1, exp: `Al quitar 2 a ${n1 + 2}, te quedan ${n1}.` },
+                        { p: `3. ¿Cuántas canoas ves si hay ${n1} en la orilla y llega ${n2} más?`, opts: [`A. ${n1 + n2}`, `B. ${n1}`, `C. 0`, `D. 10`], c: 0, exp: `Sumamos ${n1} + ${n2} = ${n1 + n2}.` },
+                        { p: `4. Si cuentas 1, 2, 3, 4, 5... ¿qué número viene justo después del 5?`, opts: [`A. 4`, `B. 6`, `C. 8`, `D. 2`], c: 1, exp: `Después del 5 sigue el 6.` },
+                        { p: `5. En una canasta hay ${n2} chontaduros. Si te comes todos los ${n2}, ¿cuántos quedan en la canasta?`, opts: [`A. ${n2}`, `B. 1`, `C. 0`, `D. 5`], c: 2, exp: `Si los quitas todos, quedan 0 chontaduros.` }
+                    ],
+                    evaluacion: [
+                        { p: `1. Un niño junta ${n1} cocos por la mañana y ${n2} por la tarde. ¿Cuántos cocos reunió?`, opts: [`A. ${n1 + n2 + 2}`, `B. ${n1 + n2}`, `C. 1`, `D. 0`], c: 1, claveLetra: "B" },
+                        { p: `2. En el río nadan ${n1 + 1} peces. Si 1 pez se esconde, ¿cuántos quedan nadando?`, opts: [`A. 0`, `B. ${n1}`, `C. ${n1 + 3}`, `D. 1`], c: 1, claveLetra: "B" },
+                        { p: `3. Si tienes ${n2} piñas y tu mamá te da 1 piña más, ¿cuántas tienes ahora?`, opts: [`A. ${n2 + 1}`, `B. 0`, `C. ${n2}`, `D. 10`], c: 0, claveLetra: "A" },
+                        { p: `4. ¿Cuál grupo tiene MÁS elementos: 8 limones o 3 limones?`, opts: [`A. 3 limones`, `B. 8 limones`, `C. Son iguales`, `D. Ninguno`], c: 1, claveLetra: "B" },
+                        { p: `5. ¿Aprender a contar con semillas nos ayuda a cuidar lo que tenemos en la comunidad?`, opts: ["A. Sí, es muy útil", "B. No ayuda", "C. Solo en la ciudad", "D. Ninguna"], c: 0, claveLetra: "A" }
+                    ]
+                };
+            }
+
+            // Para los demás grados (2º a 11º) adaptado progresivamente
+            let v1 = g + p + numL;
+            let v2 = g * 2 + numL;
+
+            return {
+                titulo: `${g}.º Grado - Período ${p} | Lección ${numL}: ${tema}`,
+                teoria: `En esta lección de **${tema}** (Grado ${g}.º) aplicamos las matemáticas a situaciones sencillas de la vida diaria en el territorio: la siembra, los viajes por el río, el peso de los frutos y los trueques de la comunidad.`,
+                practica: [
+                    { p: `1. En el tema de ${tema}, si organizas ${v1} kilos de cacao y luego agregas ${v2} kilos, ¿cuántos kilos tienes en total?`, opts: [`A. ${v1 + v2}`, `B. ${v1 + v2 + 5}`, `C. ${v1}`, `D. ${v2}`], c: 0, exp: `Sumamos ${v1} + ${v2} = ${v1 + v2}.` },
+                    { p: `2. Una canoa lleva ${v1 + 10} racimos de plátano. Si entrega ${v1} racimos en el pueblo, ¿cuántos racimos le quedan?`, opts: [`A. 5`, `B. 10`, `C. ${v1}`, `D. 0`], c: 1, exp: `Restamos ${v1 + 10} - ${v1} = 10.` },
+                    { p: `3. Si repartes ${v2 * 2} peces por igual entre 2 familias, ¿cuántos peces le corresponden a cada una?`, opts: [`A. ${v2}`, `B. ${v2 * 2}`, `C. 1`, `D. 0`], c: 0, exp: `${v2 * 2} ÷ 2 = ${v2}.` },
+                    { p: `4. Un agricultor siembra ${v1} matas de yuca y su vecino siembra ${v1} matas más. ¿Cuántas matas sembraron entre los dos?`, opts: [`A. ${v1}`, `B. ${v1 * 2}`, `C. ${v1 + 1}`, `D. 0`], c: 1, exp: `${v1} + ${v1} = ${v1 * 2}.` },
+                    { p: `5. Si el nivel del río está en ${v2 + 20} cm y baja 20 cm, ¿en cuántos centímetros queda el nivel?`, opts: [`A. 20 cm`, `B. 10 cm`, `C. ${v2} cm`, `D. ${v2 + 20} cm`], c: 2, exp: `${v2 + 20} - 20 = ${v2}.` }
+                ],
+                evaluacion: [
+                    { p: `1. Para estudiar ${tema}, se recolectaron ${v1} cocos en la mañana y ${v2} cocos en la tarde. ¿Cuál es el total de cocos?`, opts: [`A. ${v1 + v2 + 2}`, `B. ${v1 + v2}`, `C. ${v1}`, `D. ${v2}`], c: 1, claveLetra: "B" },
+                    { p: `2. Si en la casa comunitaria hay ${v2 * 3} bultos de maíz y se consumen ${v2} bultos, ¿cuántos bultos quedan?`, opts: [`A. ${v2}`, `B. ${v2 * 2}`, `C. ${v2 * 3}`, `D. 0`], c: 1, claveLetra: "B" },
+                    { p: `3. Un joven navega ${v1} metros río arriba y luego ${v1} metros río abajo de regreso. ¿Cuántos metros recorrió en total?`, opts: [`A. ${v1 * 2} metros`, `B. ${v1} metros`, `C. 0 metros`, `D. 10 metros`], c: 0, claveLetra: "A" },
+                    { p: `4. Si se compran ${v2 + 5} anzuelos para la pesca y se regalan 5 anzuelos, ¿cuántos quedan?`, opts: [`A. 5`, `B. ${v2}`, `C. ${v2 + 10}`, `D. 0`], c: 1, claveLetra: "B" },
+                    { p: `5. ¿Comprender ${tema} nos ayuda a resolver problemas de la comunidad y del territorio de manera organizada?`, opts: ["A. Sí, es muy útil", "B. No sirve", "C. Solo para la ciudad", "D. Ninguna"], c: 0, claveLetra: "A" }
+                ]
+            };
+        }
+
+        function actualizarLecciones() {
+            const p = document.getElementById('sel-periodo').value;
+            const selL = document.getElementById('sel-leccion');
+            selL.innerHTML = '';
+            for(let i = 0; i < 4; i++) {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = `Lección ${i+1} del Período ${p}`;
+                selL.appendChild(opt);
+            }
+            cargarLeccion();
+        }
+
+        function cargarLeccion() {
+            const g = document.getElementById('sel-grado').value;
+            const p = document.getElementById('sel-periodo').value;
+            const lIdx = document.getElementById('sel-leccion').value || 0;
+            const datos = obtenerDatosLeccion(g, p, lIdx);
+            
+            currentEvaluacionData = datos.evaluacion;
+
+            let html = `
+                <div class="border-b border-emerald-100 pb-3 mb-4 flex justify-between items-center">
+                    <h2 class="text-xl font-extrabold text-emerald-950">${datos.titulo}</h2>
+                    <span class="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold">Grado ${g}º - P${p}</span>
+                </div>
+                <div class="bg-gradient-to-r from-emerald-50 to-green-50 p-4 rounded-xl border-l-4 border-emerald-700 mb-6">
+                    <h3 class="font-bold text-emerald-900 mb-1">📖 Explicación Sencilla</h3>
+                    <p class="text-sm text-emerald-950 leading-relaxed">${datos.teoria}</p>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-6">
+                    <h3 class="font-bold text-slate-800 text-sm mb-2">✏️ Mi Cuaderno de Apuntes (Autoaprendizaje)</h3>
+                    <textarea placeholder="Escribe aquí tus notas o cuentas antes de responder..." class="w-full p-3 border rounded-lg text-sm h-24 bg-white focus:ring-2 focus:ring-emerald-500"></textarea>
+                </div>
+                <div class="mb-8">
+                    <h3 class="font-bold text-lg text-blue-900 mb-3">🎮 Práctica Autoguiada (5 Preguntas)</h3>
+                    <div class="space-y-4">
+            `;
+
+            datos.practica.forEach((q) => {
+                html += `
+                    <div class="p-4 bg-slate-50 border rounded-xl text-sm">
+                        <p class="font-semibold text-slate-900 mb-3">${q.p}</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+                            ${q.opts.map((o, idx) => `<button onclick="alert('${idx === q.c ? '✅ ¡Correcto! ' + q.exp : '❌ Inténtalo de nuevo.'}')" class="p-2.5 text-left border rounded-lg bg-white hover:bg-emerald-50 font-medium">${o}</button>`).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `
+                    </div>
+                </div>
+                <div>
+                    <h3 class="font-bold text-lg text-red-900 mb-3">📝 Evaluación Oficial ICFES (5 Preguntas)</h3>
+                    <form onsubmit="evaluarEstudiante(event, ${g}, ${p}, ${parseInt(lIdx)+1})" class="space-y-4">
+                        <div class="p-4 bg-amber-50 border rounded-xl mb-3">
+                            <label class="block text-xs font-bold text-amber-900 mb-1 uppercase">Tu Nombre Completo:</label>
+                            <input type="text" id="nombre-estudiante" required placeholder="Escribe tu nombre y apellidos" class="w-full p-2.5 border rounded-lg bg-white text-sm font-semibold">
+                        </div>
+            `;
+
+            datos.evaluacion.forEach((q, i) => {
+                html += `
+                    <div class="p-4 bg-red-50/30 border rounded-xl text-sm">
+                        <p class="font-semibold text-slate-900 mb-3">${q.p}</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            ${q.opts.map((o, idx) => `
+                                <label class="flex items-center gap-2 p-2.5 bg-white border rounded-lg cursor-pointer hover:bg-red-50 font-medium">
+                                    <input type="radio" name="e_${i}" value="${idx}" required>
+                                    <span>${o}</span>
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `
+                        <button type="submit" id="btn-enviar-evaluacion" class="w-full md:w-auto px-8 py-3 bg-red-700 text-white font-bold rounded-xl hover:bg-red-800 shadow">Enviar Evaluación por Wi-Fi Local</button>
+                    </form>
+                    <div id="res-estudiante" class="mt-4 p-4 rounded-xl hidden font-bold text-center text-sm shadow-inner"></div>
+                </div>
+            `;
+
+            document.getElementById('contenido-leccion').innerHTML = html;
+        }
+
+        async function enviarAEquipoServidor(registro) {
+            let targetUrl = ipServidorLocal ? ipServidorLocal : '';
+            if (!targetUrl.startsWith('http')) {
+                targetUrl = window.location.origin;
+            }
+
+            try {
+                const response = await fetch(`${targetUrl}/api/evaluaciones`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(registro)
+                });
+                return response.ok;
+            } catch (err) {
+                console.warn("Servidor Wi-Fi no respondió:", err);
+                return false;
+            }
+        }
+
+        async function evaluarEstudiante(e, grado, periodo, leccion) {
+            e.preventDefault();
+            const form = e.target;
+            const btnEnviar = document.getElementById('btn-enviar-evaluacion');
+            if (btnEnviar) btnEnviar.disabled = true;
+
+            const nombre = document.getElementById('nombre-estudiante').value || "Estudiante Anónimo";
+            let aciertos = 0;
+            let respuestasEstudiante = [];
+            const opcionesLetras = ["A", "B", "C", "D"];
+
+            currentEvaluacionData.forEach((q, i) => {
+                const seleccion = form.querySelector(`input[name="e_${i}"]:checked`);
+                const val = seleccion ? parseInt(seleccion.value) : -1;
+                if(val === q.c) aciertos++;
+                respuestasEstudiante.push({ p: i + 1, elegida: val >= 0 ? opcionesLetras[val] : "Sin responder", correcta: q.claveLetra || opcionesLetras[q.c], esCorrecta: val === q.c });
+            });
+
+            const nuevoRegistro = { 
+                id: Date.now(), 
+                estudiante: nombre, 
+                grado: grado, 
+                periodo: periodo, 
+                leccion: leccion, 
+                aciertos: aciertos, 
+                total: 5, 
+                porcentaje: Math.round((aciertos / 5) * 100), 
+                fecha: new Date().toLocaleString(), 
+                detalle: respuestasEstudiante 
+            };
+
+            // 1. Respaldar en el dispositivo local (LocalStorage)
+            let historial = JSON.parse(localStorage.getItem('odich_pruebas') || '[]');
+            historial.unshift(nuevoRegistro);
+            localStorage.setItem('odich_pruebas', JSON.stringify(historial));
+
+            // 2. Intentar enviar a través de la red Wi-Fi local
+            let enviadoExitoso = await enviarAEquipoServidor(nuevoRegistro);
+
+            if (!enviadoExitoso) {
+                // Guardar en la cola de pendientes si la red falló
+                let pendientes = JSON.parse(localStorage.getItem('odich_pendientes') || '[]');
+                pendientes.push(nuevoRegistro);
+                localStorage.setItem('odich_pendientes', JSON.stringify(pendientes));
+            }
+
+            comprobarPendientes();
+
+            const res = document.getElementById('res-estudiante');
+            res.classList.remove('hidden', 'bg-emerald-100', 'bg-amber-100', 'text-emerald-950', 'text-amber-950', 'border-emerald-300', 'border-amber-300');
+            
+            let estadoEnvio = enviadoExitoso 
+                ? `<span class="block text-xs font-normal text-emerald-800 mt-1">📡 Enviado exitosamente al Servidor Wi-Fi del Colegio.</span>`
+                : `<span class="block text-xs font-normal text-amber-800 mt-1">💾 Guardado en el dispositivo (Modo Offline). Se enviará al conectar con el servidor Wi-Fi.</span>`;
+
+            if(aciertos === 5) {
+                res.classList.add('bg-emerald-100', 'text-emerald-950', 'border', 'border-emerald-300');
+                res.innerHTML = `🎉 <strong>¡Excelente Trabajo, ${nombre}!</strong> Has obtenido 5/5 respuestas correctas (100%). ${estadoEnvio}`;
+            } else {
+                res.classList.add('bg-amber-100', 'text-amber-950', 'border', 'border-amber-300');
+                res.innerHTML = `📊 <strong>Evaluación Registrada.</strong> ${nombre}, obtuviste ${aciertos}/5 respuestas correctas (${Math.round((aciertos/5)*100)}%). ${estadoEnvio}`;
+            }
+
+            if (btnEnviar) btnEnviar.disabled = false;
+        }
+
+        function comprobarPendientes() {
+            let pendientes = JSON.parse(localStorage.getItem('odich_pendientes') || '[]');
+            const btnSync = document.getElementById('btn-sync-pendientes');
+            if (pendientes.length > 0) {
+                btnSync.classList.remove('hidden');
+                btnSync.textContent = `⚡ Sincronizar ${pendientes.length} Evaluaciones Pendientes`;
+            } else {
+                btnSync.classList.add('hidden');
+            }
+        }
+
+        async function sincronizarPendientes() {
+            let pendientes = JSON.parse(localStorage.getItem('odich_pendientes') || '[]');
+            if (pendientes.length === 0) return;
+
+            let enviados = 0;
+            let restantes = [];
+
+            for (let reg of pendientes) {
+                let ok = await enviarAEquipoServidor(reg);
+                if (ok) enviados++;
+                else restantes.push(reg);
+            }
+
+            localStorage.setItem('odich_pendientes', JSON.stringify(restantes));
+            comprobarPendientes();
+
+            if (enviados > 0) {
+                alert(`✅ Se sincronizaron exitosamente ${enviados} evaluaciones con el servidor Wi-Fi.`);
+            } else {
+                alert("⚠️ No se pudo conectar con el servidor Wi-Fi local. Revisa la conexión Wi-Fi o la IP configurada.");
+            }
+        }
+
+        async function cargarHistorialDocente() {
+            const contenedor = document.getElementById('registro-pruebas-docente');
+            let historial = JSON.parse(localStorage.getItem('odich_pruebas') || '[]');
+
+            let targetUrl = ipServidorLocal ? ipServidorLocal : window.location.origin;
+            try {
+                const resServer = await fetch(`${targetUrl}/api/evaluaciones`);
+                if (resServer.ok) {
+                    const datosServidor = await resServer.json();
+                    if (Array.isArray(datosServidor)) {
+                        historial = datosServidor;
+                    }
+                }
+            } catch(e) {
+                console.log("Cargando resultados almacenados en el dispositivo...");
+            }
+
+            if(historial.length === 0) {
+                contenedor.innerHTML = `<p class="text-sm text-gray-500 italic p-6 text-center">No hay evaluaciones enviadas todavía. Aparecerán aquí cuando los alumnos respondan por Wi-Fi o en este dispositivo.</p>`;
+                return;
+            }
+            let html = '';
+            historial.forEach((item) => {
+                let badgeColor = item.aciertos >= 4 ? 'bg-emerald-100 text-emerald-900 border-emerald-300' : (item.aciertos >= 3 ? 'bg-amber-100 text-amber-900 border-amber-300' : 'bg-red-100 text-red-900 border-red-300');
+                html += `
+                    <div class="p-4 bg-white border border-amber-200 rounded-xl shadow-sm text-sm mb-3">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b pb-2 mb-2 gap-2">
+                            <div><span class="font-extrabold text-amber-950 text-base">👤 ${item.estudiante}</span><span class="text-xs text-gray-500 ml-2">(${item.fecha})</span></div>
+                            <div class="px-3 py-1 rounded-full border text-xs font-bold ${badgeColor}">Nota: ${item.aciertos}/5 (${item.porcentaje}%)</div>
+                        </div>
+                        <p class="text-xs text-gray-700 mb-2"><strong>Ubicación:</strong> Grado ${item.grado}º | Período ${item.periodo} | Lección ${item.leccion}</p>
+                        <div class="grid grid-cols-5 gap-1 text-center text-xs">
+                            ${item.detalle.map(d => `<div class="p-1 rounded ${d.esCorrecta ? 'bg-green-100 text-green-900 font-bold' : 'bg-red-100 text-red-900 font-bold'}">P${d.p}: ${d.elegida}${d.esCorrecta ? '✓' : '(✓ ' + d.correcta + ')'}</div>`).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+            contenedor.innerHTML = html;
+        }
+
+        function limpiarHistorialDocente() {
+            if(confirm("¿Estás seguro de borrar el registro de pruebas?")) {
+                localStorage.removeItem('odich_pruebas');
+                cargarHistorialDocente();
+            }
+        }
+
+        actualizarEstadoRedUI();
+        actualizarLecciones();
+    </script>
+</body>
+</html>
